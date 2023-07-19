@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // You can use Axios for API calls
-import DateRangeSelect from './components/DateRangeSelect'
-
+import axios from 'axios';
+import DateRangeSelect from './components/DateRangeSelect';
 import ChartComponent from './ChartComponent';
-
 
 const App = () => {
   const [countries, setCountries] = useState([]);
@@ -11,10 +9,10 @@ const App = () => {
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedIndicator, setSelectedIndicator] = useState('');
   const [chartData, setChartData] = useState(null);
-  const [chartType, setChartType] = useState('column'); // Default chart type is column
+  const [chartType, setChartType] = useState('column');
   const [viewName, setViewName] = useState('');
   const [savedViews, setSavedViews] = useState([]);
-
+  const [filteredCountries, setFilteredCountries] = useState([]);
   useEffect(() => {
     fetchCountries();
     fetchIndicators();
@@ -22,39 +20,38 @@ const App = () => {
   }, []);
 
   const fetchCountries = async () => {
-    // Placeholder data - Replace with actual API call
-    const countriesData = [
-      { id: 'USA', name: 'United States' },
-      { id: 'GBR', name: 'United Kingdom' },
-      { id: 'CAN', name: 'Canada' },
-      // Add more countries...
-    ];
-    setCountries(countriesData);
+    try {
+      const response = await axios.get('https://api.worldbank.org/v2/country?format=json');
+      const countriesData = response.data[1];
+      setCountries(countriesData);
+    } catch (error) {
+      console.error('Error fetching countries:', error);
+    }
   };
 
   const fetchIndicators = async () => {
-    // Placeholder data - Replace with actual API call
-    const indicatorsData = [
-      { id: 'SP.POP.TOTL', name: 'Population, total' },
-      { id: 'NY.GDP.MKTP.CD', name: 'GDP (current US$)' },
-      { id: 'EN.ATM.CO2E.PC', name: 'CO2 emissions (metric tons per capita)' },
-      // Add more indicators...
-    ];
-    setIndicators(indicatorsData);
+    try {
+      const response = await axios.get('https://api.worldbank.org/v2/indicator?format=json');
+      const indicatorsData = response.data[1];
+      setIndicators(indicatorsData);
+    } catch (error) {
+      console.error('Error fetching indicators:', error);
+    }
   };
 
   const fetchIndicatorData = async () => {
-    // Placeholder data - Replace with actual API call
-    // Simulate fetching data for the selected country and indicator
     if (selectedCountry && selectedIndicator) {
-      // Assuming chartData should be an array of objects with { x, y } properties
-      const indicatorData = [
-        { x: '2018', y: 100 },
-        { x: '2019', y: 150 },
-        { x: '2020', y: 200 },
-        // Add more data points...
-      ];
-      setChartData(indicatorData);
+      try {
+        const startDate = '2018'; // Replace with actual start date
+        const endDate = '2020'; // Replace with actual end date
+        const apiUrl = `https://api.worldbank.org/v2/country/${selectedCountry}/indicator/${selectedIndicator}?date=${startDate}:${endDate}&format=json`;
+        const response = await axios.get(apiUrl);
+        const indicatorData = response.data[1];
+        setChartData(indicatorData);
+      } catch (error) {
+        console.error('Error fetching indicator data:', error);
+        setChartData(null);
+      }
     }
   };
 
@@ -65,7 +62,6 @@ const App = () => {
   };
 
   const saveView = async () => {
-    // Placeholder saveView - Replace with actual API call to the backend
     if (viewName && selectedCountry && selectedIndicator && chartData) {
       const newView = {
         name: viewName,
@@ -75,31 +71,46 @@ const App = () => {
         chartData,
       };
       // Here, you would make an API call to your backend to save the view
+      // For example: await axios.post('/views/save', newView);
+      // Java backend will get this and do his job
       console.log('Save this view:', newView);
       fetchSavedViews(); // Refresh the saved views list
     }
   };
+  const handleCountryChange = (event) => {
+    const { value } = event.target;
+    // Filter the countries based on the user input
+    const filteredCountries = countries.filter((country) =>
+      country.name.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredCountries(filteredCountries);
+    setSelectedCountry(value); // Update the selected country
+  };
 
   const fetchSavedViews = async () => {
     // Placeholder fetchSavedViews - Replace with actual API call to the backend
-    // Simulate fetching saved views from the backend
-    const savedViewsData = [
-      {
-        id: 1,
-        name: 'View 1',
-        country: 'USA',
-        indicator: 'SP.POP.TOTL',
-        chartType: 'line',
-        chartData: [
-          { x: '2018', y: 100 },
-          { x: '2019', y: 150 },
-          { x: '2020', y: 200 },
-          // Add more data points...
-        ],
-      },
-      // Add more saved views...
-    ];
-    setSavedViews(savedViewsData);
+    try {
+      const savedViewsData = [
+        {
+          id: 1,
+          name: 'View 1',
+          country: 'USA',
+          indicator: 'SP.POP.TOTL',
+          chartType: 'line',
+          chartData: [
+            { x: '2018', y: 100 },
+            { x: '2019', y: 150 },
+            { x: '2020', y: 200 },
+            // Add more data points...
+          ],
+        },
+        // Add more saved views...
+      ];
+      setSavedViews(savedViewsData);
+    } catch (error) {
+      console.error('Error fetching saved views:', error);
+      setSavedViews([]);
+    }
   };
 
   const handleDateRangeChange = (startDate, endDate) => {
@@ -111,20 +122,20 @@ const App = () => {
   return (
     <div>
       <div>
-        {/* Country selection */}
+        {/* Country selection with autocomplete */}
         <label htmlFor="countrySelect">Select Country:</label>
-        <select
+        <input
+          type="text"
           id="countrySelect"
           value={selectedCountry}
-          onChange={(e) => setSelectedCountry(e.target.value)}
-        >
-          <option value="">Select a country</option>
-          {countries.map((country) => (
-            <option key={country.id} value={country.id}>
-              {country.name}
-            </option>
+          onChange={handleCountryChange}
+          list="countryOptions" // Connect input to the datalist options
+        />
+        <datalist id="countryOptions">
+          {filteredCountries.map((country) => (
+            <option key={country.id} value={country.name} />
           ))}
-        </select>
+        </datalist>
       </div>
 
       <div>
@@ -145,17 +156,12 @@ const App = () => {
       </div>
 
       <div>
-        {/* Date range selection */}
-        <DateRangeSelect onDateRangeChange={handleDateRangeChange} />
-      </div>
-
-      <div>
         {/* Chart rendering */}
-        {/* Assuming you have implemented a chart component (e.g., ChartComponent) */}
-        {/* Pass chartData and chartType as props */}
-        {/* Implement a switch or radio buttons to switch the chartType */}
-        {/* For example, you can use chartType: 'line', 'bar', 'area', 'pie', etc. */}
-        {/*<ChartComponent data={processChartData(chartData)} type={chartType} />}
+        {chartData ? (
+          <ChartComponent data={processChartData(chartData)} type={chartType} />
+        ) : (
+          <div>No data available for the selected date range.</div>
+        )}
       </div>
 
       <div>
@@ -173,13 +179,30 @@ const App = () => {
       <div>
         {/* Display the list of saved views */}
         <h2>Saved Views</h2>
-        <ul>
-          {savedViews.map((view) => (
-            <li key={view.id}>
-              {view.name} - {view.country} - {view.indicator} - {view.chartType}
-            </li>
-          ))}
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>View Name</th>
+              <th>Country</th>
+              <th>Indicator</th>
+              <th>Chart Type</th>
+              <th>Date Range</th> {/* New column for DateRange */}
+            </tr>
+          </thead>
+          <tbody>
+            {savedViews.map((view) => (
+              <tr key={view.id}>
+                <td>{view.name}</td>
+                <td>{view.country}</td>
+                <td>{view.indicator}</td>
+                <td>{view.chartType}</td>
+                <td>
+                  {view.startDate} to {view.endDate}
+                </td> {/* Display the DateRange */}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
