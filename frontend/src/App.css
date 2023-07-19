@@ -1,0 +1,88 @@
+/* src/App.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.data-selection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.select-wrapper {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.chart-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.save-view {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.view-list {
+  margin-bottom: 40px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+td {
+  vertical-align: top;
+}
+
+button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsiveness for smaller devices */
+@media (max-width: 480px) {
+  .data-selection {
+    flex-direction: column;
+  }
+
+  .select-wrapper {
+    margin-bottom: 10px;
+  }
+}
